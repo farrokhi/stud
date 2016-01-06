@@ -1750,8 +1750,10 @@ void daemonize () {
     if (pfh == NULL) {
         if (errno == EEXIST) {
            ERR("Daemon already running, pid: %jd\n", (intmax_t)otherpid);
+           exit(1);
         }
         ERR("Cannot open or create pidfile");
+        exit(1);
     }
 
     /* let's make some children, baby :) */
