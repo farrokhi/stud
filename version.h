@@ -1,1 +1,1 @@
-#define STUD_VERSION "0.3-dev"
+#define STUD_VERSION "0.4-dev"

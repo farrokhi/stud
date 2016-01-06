@@ -7,9 +7,9 @@ PREFIX  = /usr/local
 BINDIR  = $(PREFIX)/bin
 MANDIR  = $(PREFIX)/share/man
 
-CFLAGS  = -O2 -g -std=c99 -fno-strict-aliasing -Wall -W -D_GNU_SOURCE -I/usr/local/include
+CFLAGS  = -O2 -std=c99 -fno-strict-aliasing -Wall -W -D_GNU_SOURCE -I/usr/local/include
 LDFLAGS = -lssl -lcrypto -lev -L/usr/local/lib
-OBJS    = stud.o ringbuffer.o configuration.o
+OBJS    = stud.o ringbuffer.o configuration.o pidutil.o
 
 all: realall
 
@@ -37,7 +37,7 @@ ALL += stud
 realall: $(ALL)
 
 stud: $(OBJS)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 install: $(ALL)
 	install -d $(DESTDIR)$(BINDIR)

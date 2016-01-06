@@ -62,6 +62,7 @@
 #include <openssl/asn1.h>
 #include <ev.h>
 
+#include "pidutil.h"
 #include "ringbuffer.h"
 #include "shctx.h"
 #include "configuration.h"
@@ -108,6 +109,7 @@ struct addrinfo *shcupd_peers[MAX_SHCUPD_PEERS+1];
 static unsigned char shared_secret[SHA_DIGEST_LENGTH];
 #endif /*USE_SHARED_CACHE*/
 
+struct pidfh *pfh;
 long openssl_version;
 int create_workers;
 stud_config *CONFIG;
@@ -1694,6 +1696,8 @@ static void sigh_terminate (int __attribute__ ((unused)) signo) {
         /* LOG("Shutdown complete.\n"); */
     }
 
+    pidfile_remove(pfh);
+
     /* this is it, we're done... */
     exit(0);
 }
@@ -1732,10 +1736,22 @@ void init_signals() {
 }
 
 void daemonize () {
+
+    pid_t otherpid;
+
     /* go to root directory */
     if (chdir("/") != 0) {
         ERR("Unable change directory to /: %s\n", strerror(errno));
         exit(1);
+    }
+
+    /* Check if we can acquire the pid file */
+    pfh = pidfile_open(NULL, 0600, &otherpid);
+    if (pfh == NULL) {
+        if (errno == EEXIST) {
+           ERR("Daemon already running, pid: %jd\n", (intmax_t)otherpid);
+        }
+        ERR("Cannot open or create pidfile");
     }
 
     /* let's make some children, baby :) */
@@ -1780,6 +1796,9 @@ void daemonize () {
         exit(1);
     }
 
+    /* persist pid */
+    pidfile_write(pfh);
+    
     LOG("Successfully daemonized as pid %d.\n", getpid());
 }
 
@@ -1842,7 +1861,6 @@ int main(int argc, char **argv) {
     if (CONFIG->DAEMONIZE) {
         /* disable logging to stderr */
         CONFIG->QUIET = 1;
-        CONFIG->SYSLOG = 1;
 
         /* become a daemon */
         daemonize();
