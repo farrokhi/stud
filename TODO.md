@@ -1,3 +1,6 @@
 - Add TCP Fast Open (RFC 7413) if supported by environment
-- Add pidfile support
-
+- Add pidfile support (done)
+- Add "instance name" support to run multiple instances
+- Add FreeBSD rc.d script
+- Add logfile logging
+- Add statistics support
