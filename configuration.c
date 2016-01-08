@@ -1293,7 +1293,6 @@ void config_parse_cli(int argc, char **argv, stud_config *cfg) {
     config_die("Options --write-ip and --proxy-proxy are mutually exclusive.");
 
   if (cfg->DAEMONIZE) {
-    cfg->SYSLOG = 1;
     cfg->QUIET = 1;
   }
 
