@@ -47,6 +47,7 @@
 #define CFG_WRITE_PROXY "write-proxy"
 #define CFG_PEM_FILE "pem-file"
 #define CFG_PROXY_PROXY "proxy-proxy"
+#define CFG_PIDFILE "/var/run/stud.pid"
 
 #ifdef USE_SHARED_CACHE
   #define CFG_SHARED_CACHE "shared-cache"
@@ -616,6 +617,11 @@ void config_param_validate (char *k, char *v, stud_config *cfg, char *file, int 
       }
     }
   }
+  else if (strcmp(k, CFG_PIDFILE) == 0) {
+    if (v != NULL && strlen(v) > 0) {
+      config_assign_str(&cfg->PIDFILE, v);
+    }
+  }
   else if (strcmp(k, CFG_GROUP) == 0) {
     if (v != NULL && strlen(v) > 0) {
       struct group *grp;
@@ -915,6 +921,7 @@ void config_print_usage_fd (char *prog, stud_config *cfg, FILE *out) {
   fprintf(out, "\n");
   fprintf(out, "OTHER OPTIONS:\n");
   fprintf(out, "      --daemon               Fork into background and become a daemon (Default: %s)\n", config_disp_bool(cfg->DAEMONIZE));
+  fprintf(out, "  -p  --pidfile              PID File name and path (Default: %s\n", config_disp_str(cfg->PIDFILE));
   fprintf(out, "      --write-ip             Write 1 octet with the IP family followed by the IP\n");
   fprintf(out, "                             address in 4 (IPv4) or 16 (IPv6) octets little-endian\n");
   fprintf(out, "                             to backend before the actual data\n");
@@ -1061,6 +1068,13 @@ void config_print_default (FILE *fd, stud_config *cfg) {
   fprintf(fd, FMT_QSTR, CFG_USER, config_disp_uid(cfg->UID));
   fprintf(fd, "\n");
 
+  fprintf(fd, "# PID file name. You may want to change it in case\n");
+  fprintf(fd, "# you want to run multiple instances simultaneously\n");  
+  fprintf(fd, "#\n");
+  fprintf(fd, "# type: string\n");
+  fprintf(fd, FMT_QSTR, CFG_PIDFILE, config_disp_uid(cfg->PIDFILE));
+  fprintf(fd, "\n");
+
   fprintf(fd, "# Set gid after binding a socket\n");
   fprintf(fd, "#\n");
   fprintf(fd, "# type: string\n");
@@ -1156,6 +1170,7 @@ void config_parse_cli(int argc, char **argv, stud_config *cfg) {
     { CFG_KEEPALIVE, 1, NULL, 'k' },
     { CFG_CHROOT, 1, NULL, 'r' },
     { CFG_USER, 1, NULL, 'u' },
+    { CFG_PIDFILE, 1, NULL, 'p'}
     { CFG_GROUP, 1, NULL, 'g' },
     { CFG_QUIET, 0, NULL, 'q' },
     { CFG_SYSLOG, 0, NULL, 's' },
@@ -1241,6 +1256,9 @@ void config_parse_cli(int argc, char **argv, stud_config *cfg) {
         break;
       case 'u':
         config_param_validate(CFG_USER, optarg, cfg, NULL, 0);
+        break;
+      case 'p':
+        config_param_validate(CFG_PIDFILE, optarg, cfg, NULL, 0);
         break;
       case 'g':
         config_param_validate(CFG_GROUP, optarg, cfg, NULL, 0);

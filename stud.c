@@ -1752,6 +1752,7 @@ void daemonize () {
            ERR("Daemon already running, pid: %jd\n", (intmax_t)otherpid);
            exit(1);
         }
+        printf("DEBUG:\n========\npidfile: %s \n========\n", pfh->pf_path, );
         ERR("Cannot open or create pidfile");
         exit(1);
     }

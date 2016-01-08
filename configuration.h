@@ -46,6 +46,7 @@ struct __stud_config {
     char *CHROOT;
     uid_t UID;
     gid_t GID;
+    char *PIDFILE;
     char *FRONT_IP;
     char *FRONT_PORT;
     char *BACK_IP;
