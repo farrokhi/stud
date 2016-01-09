@@ -3,12 +3,12 @@
 # USE_SHARED_CACHE   :   enable/disable a shared session cache (disabled by default)
 
 DESTDIR =
-PREFIX  = /usr/local
+PREFIX ?= /usr/local
 BINDIR  = $(PREFIX)/bin
 MANDIR  = $(PREFIX)/share/man
 
-CFLAGS  = -O2 -std=c99 -fno-strict-aliasing -Wall -W -D_GNU_SOURCE -I/usr/local/include
-LDFLAGS = -lssl -lcrypto -lev -L/usr/local/lib
+CFLAGS  = -O3 -std=c99 -pipe -funroll-loops -ffast-math -march=native -mfpmath=sse -msse3 -fno-strict-aliasing -Wall -Wextra -D_GNU_SOURCE -I$(PREFIX)/include
+LDFLAGS = -fuse-ld=gold -flto -lssl -lcrypto -lev -L$(PREFIX)/lib
 OBJS    = stud.o ringbuffer.o configuration.o pidutil.o logfile.o
 
 all: realall
@@ -50,3 +50,4 @@ clean:
 
 
 .PHONY: all realall
+
