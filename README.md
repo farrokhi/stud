@@ -91,57 +91,60 @@ of the certificates matches, the last certificate will be used as the default.
 
 Detail about the entire set of options can be found by invoking `stud -h`:
 
-    CONFIGURATION:
+	CONFIGURATION:
 
-            --config=FILE      Load configuration from specified file.
-            --default-config   Prints default configuration to stdout.
+	        --config=FILE      Load configuration from specified file.
+	        --default-config   Prints default configuration to stdout.
 
-    ENCRYPTION METHODS:
+	ENCRYPTION METHODS:
 
-          --tls                   TLSv1 (default)
-          --ssl                   SSLv3 (implies no TLSv1)
-      -c  --ciphers=SUITE         Sets allowed ciphers (Default: "")
-      -e  --ssl-engine=NAME       Sets OpenSSL engine (Default: "")
-      -O  --prefer-server-ciphers Prefer server list order
+	      --tls                   TLSv1 (default)
+	      --ssl                   SSLv3 (implies no TLSv1)
+	  -c  --ciphers=SUITE         Sets allowed ciphers (Default: "")
+	  -e  --ssl-engine=NAME       Sets OpenSSL engine (Default: "")
+	  -O  --prefer-server-ciphers Prefer server list order
 
-    SOCKET:
+	SOCKET:
 
-      -b  --backend=HOST,PORT     Backend [connect] (default is "[127.0.0.1]:8000")
-      -f  --frontend=HOST,PORT    Frontend [bind] (default is "[*]:8443")
+	  --client                    Enable client proxy mode
+	  -b  --backend=HOST,PORT     Backend [connect] (default is "[127.0.0.1]:8000")
+	  -f  --frontend=HOST,PORT    Frontend [bind] (default is "[*]:8443")
 
-    PERFORMANCE:
+	PERFORMANCE:
 
-      -n  --workers=NUM          Number of worker processes (Default: 1)
-      -B  --backlog=NUM          Set listen backlog size (Default: 100)
-      -k  --keepalive=SECS       TCP keepalive on client socket (Default: 3600)
+	  -n  --workers=NUM          Number of worker processes (Default: 1)
+	  -B  --backlog=NUM          Set listen backlog size (Default: 100)
+	  -k  --keepalive=SECS       TCP keepalive on client socket (Default: 3600)
 
-    SECURITY:
+	SECURITY:
 
-      -r  --chroot=DIR           Sets chroot directory (Default: "")
-      -u  --user=USER            Set uid/gid after binding the socket (Default: "")
-      -g  --group=GROUP          Set gid after binding the socket (Default: "")
+	  -r  --chroot=DIR           Sets chroot directory (Default: "")
+	  -u  --user=USER            Set uid/gid after binding the socket (Default: "")
+	  -g  --group=GROUP          Set gid after binding the socket (Default: "")
 
-    LOGGING:
-      -q  --quiet                Be quiet; emit only error messages
-      -s  --syslog               Send log message to syslog in addition to stderr/stdout
-      --syslog-facility=FACILITY Syslog facility to use (Default: "daemon")
+	LOGGING:
+	  -q  --quiet                Be quiet; emit only error messages
+	  -s  --syslog               Send log message to syslog in addition to stderr/stdout
+	  --syslog-facility=FACILITY Syslog facility to use (Default: "daemon")
 
-    OTHER OPTIONS:
-          --daemon               Fork into background and become a daemon (Default: off)
-          --write-ip             Write 1 octet with the IP family followed by the IP
-                                 address in 4 (IPv4) or 16 (IPv6) octets little-endian
-                                 to backend before the actual data
-                                 (Default: off)
-          --write-proxy          Write HaProxy's PROXY (IPv4 or IPv6) protocol line
-                                 before actual data
-                                 (Default: off)
-          --proxy-proxy          Proxy HaProxy's PROXY (IPv4 or IPv6) protocol line
-                                 before actual data
-                                 (Default: off)
+	OTHER OPTIONS:
+	      --daemon               Fork into background and become a daemon (Default: off)
+	  -p  --pidfile              PID File name and path (Default: "/var/run/stud.pid")
+	  -l  --logfile              LOG File name and path (Default: "")
+	      --write-ip             Write 1 octet with the IP family followed by the IP
+	                             address in 4 (IPv4) or 16 (IPv6) octets little-endian
+	                             to backend before the actual data
+	                             (Default: off)
+	      --write-proxy          Write HaProxy's PROXY (IPv4 or IPv6) protocol line
+	                             before actual data
+	                             (Default: off)
+	      --proxy-proxy          Proxy HaProxy's PROXY (IPv4 or IPv6) protocol line
+	                             before actual data
+	                             (Default: off)
 
-      -t  --test                 Test configuration and exit
-      -V  --version              Print program version and exit
-      -h  --help                 This help message
+	  -t  --test                 Test configuration and exit
+	  -V  --version              Print program version and exit
+	  -h  --help                 This help message
 
 Configuration File
 ------------------
