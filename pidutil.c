@@ -60,10 +60,11 @@ flopen(const char *path, int flags,...)
 	flags &= ~O_TRUNC;
 
 	for (;;) {
-		if ((fd = open(path, flags, mode)) == -1)
+		if ((fd = open(path, flags, mode)) == -1) {
 			/* non-existent or no access */
 			warn("open() failed. path= %s , flags= %d, mode=%d", path, flags, mode);
 			return (-1);
+		}
 		if (flock(fd, operation) == -1) {
 			/* unsupported or interrupted */
 			serrno = errno;
@@ -143,7 +144,10 @@ pidfile_open(const char *path, mode_t mode, pid_t *pidptr)
 
 	pfh = malloc(sizeof(*pfh));
 	if (pfh == NULL)
+	{
+		warn("malloc() failed");
 		return NULL;
+	}
 
 	if (path == NULL)
 		len = snprintf(pfh->pf_path, sizeof(pfh->pf_path), "/var/run/%s.pid", PROGNAME);
@@ -153,6 +157,7 @@ pidfile_open(const char *path, mode_t mode, pid_t *pidptr)
 	if (len >= sizeof(pfh->pf_path)) {
 		free(pfh);
 		errno = ENAMETOOLONG;
+		warn("bad filename");
 		return (NULL);
 	}
 	fd = flopen(pfh->pf_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NONBLOCK, mode);
@@ -178,6 +183,7 @@ pidfile_open(const char *path, mode_t mode, pid_t *pidptr)
 			}
 		}
 		free(pfh);
+		warn("flopen() returned -1");
 		return (NULL);
 	}
 	if (fstat(fd, &sb) == -1) {
@@ -186,6 +192,7 @@ pidfile_open(const char *path, mode_t mode, pid_t *pidptr)
 		close(fd);
 		free(pfh);
 		errno = error;
+		warn("fstat() failed");
 		return (NULL);
 	}
 	pfh->pf_fd = fd;

@@ -64,6 +64,7 @@
 #include <ev.h>
 
 #include "pidutil.h"
+#include "logfile.h"
 #include "ringbuffer.h"
 #include "shctx.h"
 #include "configuration.h"
@@ -111,6 +112,7 @@ static unsigned char shared_secret[SHA_DIGEST_LENGTH];
 #endif /*USE_SHARED_CACHE*/
 
 struct pidfh *pfh;
+log_t *lfh = NULL;
 long openssl_version;
 int create_workers;
 stud_config *CONFIG;
@@ -180,12 +182,14 @@ typedef struct proxystate {
     do {                                                    \
       if (!CONFIG->QUIET) fprintf(stdout, __VA_ARGS__);     \
       if (CONFIG->SYSLOG) syslog(LOG_INFO, __VA_ARGS__);    \
+	  if (lfh != NULL) log_printf(lfh, __VA_ARGS__);		\
     } while(0)
 
 #define ERR(...)                                            \
     do {                                                    \
       fprintf(stderr, __VA_ARGS__);                         \
       if (CONFIG->SYSLOG) syslog(LOG_ERR, __VA_ARGS__);     \
+	  if (lfh != NULL) log_printf(lfh, __VA_ARGS__);		\
     } while(0)
 
 #define NULL_DEV "/dev/null"
@@ -1698,9 +1702,16 @@ static void sigh_terminate (int __attribute__ ((unused)) signo) {
     }
 
     pidfile_remove(pfh);
+	log_close(lfh);
 
     /* this is it, we're done... */
     exit(0);
+}
+
+static void sigh_hangup (int __attribute__ ((unused)) signo) {
+
+	LOG("{core} Received HUP signal. Reopening log file...");
+	log_reopen(&lfh);	/* necessary for log file rotation */
 }
 
 void init_signals() {
@@ -1734,11 +1745,22 @@ void init_signals() {
         ERR("Unable to register SIGTERM signal handler: %s\n", strerror(errno));
         exit(1);
     }
+	act.sa_handler = sigh_hangup;
+    if (sigaction(SIGHUP, &act, NULL) < 0) {
+        ERR("Unable to register SIGHUP signal handler: %s\n", strerror(errno));
+        exit(1);
+    }
 }
 
 void daemonize () {
 
     pid_t otherpid;
+
+    /* go to root directory */
+    if (chdir("/") != 0) {
+        ERR("Unable change directory to /: %s\n", strerror(errno));
+        exit(1);
+    }
 
     /* Check if we can acquire the pid file */
     pfh = pidfile_open(CONFIG->PIDFILE, 0644, &otherpid);
@@ -1748,15 +1770,14 @@ void daemonize () {
            exit(1);
         }
         ERR("Cannot open or create pidfile\n");
-		warn("pidfile: %s, uid: %d, gid: %d", CONFIG->PIDFILE, getuid(), getgid());
         exit(1);
     }
 
-    /* go to root directory */
-    if (chdir("/") != 0) {
-        ERR("Unable change directory to /: %s\n", strerror(errno));
-        exit(1);
-    }
+	if (CONFIG->LOGFILE && CONFIG->LOGFILE[0]) {
+		if ((lfh = log_open(CONFIG->LOGFILE, 0644)) == NULL) {
+			ERR("Cannot open log file \"%s\"", CONFIG->LOGFILE);
+		}
+	}
 
     /* let's make some children, baby :) */
     pid_t pid = fork();

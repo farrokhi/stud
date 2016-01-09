@@ -48,6 +48,7 @@
 #define CFG_PEM_FILE "pem-file"
 #define CFG_PROXY_PROXY "proxy-proxy"
 #define CFG_PIDFILE "pidfile"
+#define CFG_LOGFILE "logfile"
 
 #ifdef USE_SHARED_CACHE
   #define CFG_SHARED_CACHE "shared-cache"
@@ -146,6 +147,7 @@ stud_config * config_new (void) {
   r->SYSLOG             = 0;
   r->SYSLOG_FACILITY    = LOG_DAEMON;
   r->PIDFILE			= strdup("/var/run/stud.pid");
+  r->LOGFILE			= strdup("/var/log/stud.log");
   r->TCP_KEEPALIVE_TIME = 3600;
   r->DAEMONIZE          = 0;
   r->PREFER_SERVER_CIPHERS = 0;
@@ -623,6 +625,11 @@ void config_param_validate (char *k, char *v, stud_config *cfg, char *file, int 
       config_assign_str(&cfg->PIDFILE, v);
     }
   }
+  else if (strcmp(k, CFG_LOGFILE) == 0) {
+    if (v != NULL && strlen(v) > 0) {
+      config_assign_str(&cfg->LOGFILE, v);
+    }
+  }
   else if (strcmp(k, CFG_GROUP) == 0) {
     if (v != NULL && strlen(v) > 0) {
       struct group *grp;
@@ -923,6 +930,7 @@ void config_print_usage_fd (char *prog, stud_config *cfg, FILE *out) {
   fprintf(out, "OTHER OPTIONS:\n");
   fprintf(out, "      --daemon               Fork into background and become a daemon (Default: %s)\n", config_disp_bool(cfg->DAEMONIZE));
   fprintf(out, "  -p  --pidfile              PID File name and path (Default: \"%s\")\n", config_disp_str(cfg->PIDFILE));
+  fprintf(out, "  -l  --logfile              LOG File name and path (Default: \"%s\")\n", config_disp_str(cfg->LOGFILE));
   fprintf(out, "      --write-ip             Write 1 octet with the IP family followed by the IP\n");
   fprintf(out, "                             address in 4 (IPv4) or 16 (IPv6) octets little-endian\n");
   fprintf(out, "                             to backend before the actual data\n");
@@ -1076,6 +1084,13 @@ void config_print_default (FILE *fd, stud_config *cfg) {
   fprintf(fd, FMT_QSTR, CFG_PIDFILE, config_disp_str(cfg->PIDFILE));
   fprintf(fd, "\n");
 
+  fprintf(fd, "# LOG file name. Sometimes you need to bypass syslog\n");
+  fprintf(fd, "# for performance reasons\n");  
+  fprintf(fd, "#\n");
+  fprintf(fd, "# type: string\n");
+  fprintf(fd, FMT_QSTR, CFG_LOGFILE, config_disp_str(cfg->LOGFILE));
+  fprintf(fd, "\n");
+
   fprintf(fd, "# Set gid after binding a socket\n");
   fprintf(fd, "#\n");
   fprintf(fd, "# type: string\n");
@@ -1172,6 +1187,7 @@ void config_parse_cli(int argc, char **argv, stud_config *cfg) {
     { CFG_CHROOT, 1, NULL, 'r' },
     { CFG_USER, 1, NULL, 'u' },
     { CFG_PIDFILE, 1, NULL, 'p'},
+    { CFG_LOGFILE, 1, NULL, 'p'},
     { CFG_GROUP, 1, NULL, 'g' },
     { CFG_QUIET, 0, NULL, 'q' },
     { CFG_SYSLOG, 0, NULL, 's' },
@@ -1191,7 +1207,7 @@ void config_parse_cli(int argc, char **argv, stud_config *cfg) {
     int option_index = 0;
     c = getopt_long(
       argc, argv,
-      "c:e:Ob:f:n:B:C:U:P:M:k:r:u:g:p:qstVh",
+      "c:e:Ob:f:n:B:C:U:P:M:k:r:u:g:p:l:qstVh",
       long_options, &option_index
     );
 
@@ -1260,6 +1276,9 @@ void config_parse_cli(int argc, char **argv, stud_config *cfg) {
         break;
       case 'p':
         config_param_validate(CFG_PIDFILE, optarg, cfg, NULL, 0);
+        break;
+      case 'l':
+        config_param_validate(CFG_LOGFILE, optarg, cfg, NULL, 0);
         break;
       case 'g':
         config_param_validate(CFG_GROUP, optarg, cfg, NULL, 0);
