@@ -182,14 +182,14 @@ typedef struct proxystate {
     do {                                                    \
       if (!CONFIG->QUIET) fprintf(stdout, __VA_ARGS__);     \
       if (CONFIG->SYSLOG) syslog(LOG_INFO, __VA_ARGS__);    \
-	  if (lfh != NULL) log_printf(lfh, __VA_ARGS__);		\
+      if (lfh != NULL) log_tsprintf(lfh, __VA_ARGS__);		\
     } while(0)
 
 #define ERR(...)                                            \
     do {                                                    \
       fprintf(stderr, __VA_ARGS__);                         \
       if (CONFIG->SYSLOG) syslog(LOG_ERR, __VA_ARGS__);     \
-	  if (lfh != NULL) log_printf(lfh, __VA_ARGS__);		\
+      if (lfh != NULL) log_tsprintf(lfh, __VA_ARGS__);		\
     } while(0)
 
 #define NULL_DEV "/dev/null"

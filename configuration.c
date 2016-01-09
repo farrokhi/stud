@@ -147,7 +147,7 @@ stud_config * config_new (void) {
   r->SYSLOG             = 0;
   r->SYSLOG_FACILITY    = LOG_DAEMON;
   r->PIDFILE			= strdup("/var/run/stud.pid");
-  r->LOGFILE			= strdup("/var/log/stud.log");
+  r->LOGFILE			= strdup("");
   r->TCP_KEEPALIVE_TIME = 3600;
   r->DAEMONIZE          = 0;
   r->PREFER_SERVER_CIPHERS = 0;
@@ -1085,7 +1085,8 @@ void config_print_default (FILE *fd, stud_config *cfg) {
   fprintf(fd, "\n");
 
   fprintf(fd, "# LOG file name. Sometimes you need to bypass syslog\n");
-  fprintf(fd, "# for performance reasons\n");  
+  fprintf(fd, "# for performance reasons. Empty string disables loggine\n");
+  fprintf(fd, "# or you may want to specify something like \"/var/log/stud.log\"\n");
   fprintf(fd, "#\n");
   fprintf(fd, "# type: string\n");
   fprintf(fd, FMT_QSTR, CFG_LOGFILE, config_disp_str(cfg->LOGFILE));
