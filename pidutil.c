@@ -1,4 +1,5 @@
 #include "pidutil.h"
+#include <err.h>
 
 struct pidfh {
 	int	pf_fd;
@@ -61,17 +62,20 @@ flopen(const char *path, int flags,...)
 	for (;;) {
 		if ((fd = open(path, flags, mode)) == -1)
 			/* non-existent or no access */
+			warn("open() failed. path= %s , flags= %d, mode=%d", path, flags, mode);
 			return (-1);
 		if (flock(fd, operation) == -1) {
 			/* unsupported or interrupted */
 			serrno = errno;
 			(void)close(fd);
 			errno = serrno;
+			warn("flock() failed");
 			return (-1);
 		}
 		if (stat(path, &sb) == -1) {
 			/* disappeared from under our feet */
 			(void)close(fd);
+			warn("stat() failed");
 			continue;
 		}
 		if (fstat(fd, &fsb) == -1) {
@@ -79,12 +83,14 @@ flopen(const char *path, int flags,...)
 			serrno = errno;
 			(void)close(fd);
 			errno = serrno;
+			warn("fstat() failed");
 			return (-1);
 		}
 		if (sb.st_dev != fsb.st_dev ||
 		    sb.st_ino != fsb.st_ino) {
 			/* changed under our feet */
 			(void)close(fd);
+			warn("dev or inode number mismatch");
 			continue;
 		}
 		if (trunc && ftruncate(fd, 0) != 0) {
@@ -92,6 +98,7 @@ flopen(const char *path, int flags,...)
 			serrno = errno;
 			(void)close(fd);
 			errno = serrno;
+			warn("ftruncate() failed");
 			return (-1);
 		}
 		return (fd);

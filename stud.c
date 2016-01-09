@@ -48,6 +48,7 @@
 #include <limits.h>
 #include <syslog.h>
 #include <stdarg.h>
+#include <err.h>
 
 #include <ctype.h>
 #include <sched.h>
@@ -1739,21 +1740,21 @@ void daemonize () {
 
     pid_t otherpid;
 
-    /* go to root directory */
-    if (chdir("/") != 0) {
-        ERR("Unable change directory to /: %s\n", strerror(errno));
-        exit(1);
-    }
-
     /* Check if we can acquire the pid file */
-    pfh = pidfile_open(NULL, 0600, &otherpid);
+    pfh = pidfile_open(CONFIG->PIDFILE, 0644, &otherpid);
     if (pfh == NULL) {
         if (errno == EEXIST) {
            ERR("Daemon already running, pid: %jd\n", (intmax_t)otherpid);
            exit(1);
         }
-        printf("DEBUG:\n========\npidfile: %s \n========\n", pfh->pf_path, );
-        ERR("Cannot open or create pidfile");
+        ERR("Cannot open or create pidfile\n");
+		warn("pidfile: %s, uid: %d, gid: %d", CONFIG->PIDFILE, getuid(), getgid());
+        exit(1);
+    }
+
+    /* go to root directory */
+    if (chdir("/") != 0) {
+        ERR("Unable change directory to /: %s\n", strerror(errno));
         exit(1);
     }
 
